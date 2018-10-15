@@ -23,6 +23,9 @@ public class TicTacToeGame {
         this.mBoard=boards;
     }
 
+    public void setDifficultyLevel(DifficultyLevel easy) {
+    }
+
     public enum DifficultyLevel {Easy, Harder, Expert};
 
     private DifficultyLevel mDifficultyLevel = DifficultyLevel.Expert;
