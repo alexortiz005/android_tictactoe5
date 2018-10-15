@@ -1,9 +1,11 @@
 package com.example.odparraj.triky5;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Handler;
@@ -21,7 +23,7 @@ import android.widget.Toast;
 
 import java.util.Random;
 
-public class TicTacToeActivity extends AppCompatActivity {
+public class TicTacToeActivity extends Activity {
 
     private TicTacToeGame mGame;
     private Button mBoardButtons[];
@@ -31,6 +33,7 @@ public class TicTacToeActivity extends AppCompatActivity {
     private int human_wins;
     private int android_wins;
     private int ties;
+    private int turn;
 
     static final int DIALOG_DIFFICULTY_ID = 0;
     static final int DIALOG_QUIT_ID = 2;
@@ -41,15 +44,21 @@ public class TicTacToeActivity extends AppCompatActivity {
     private MediaPlayer mHumanMediaPlayer;
     private MediaPlayer mComputerMediaPLayer;
 
-    private int turn;
+
+    private SharedPreferences mPrefs;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mPrefs = getSharedPreferences("ttt_prefs", MODE_PRIVATE);
+
+
         mHumanMediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.human);
         mComputerMediaPLayer = MediaPlayer.create(getApplicationContext(), R.raw.computer);
 
-        setContentView(R.layout.activity_tic_tac_toe);
+        setContentView(R.layout.main);
 
         mBoardButtons = new Button[TicTacToeGame.BOARD_SIZE];
         mBoardButtons[0] = (Button) findViewById(R.id.b1);
@@ -75,9 +84,15 @@ public class TicTacToeActivity extends AppCompatActivity {
         mBoardView = (BoardView) findViewById(R.id.board);
         mBoardView.setGame(mGame);
         mBoardView.setOnTouchListener(mTouchListener);
-        updateScore();
+
+        human_wins = mPrefs.getInt("mHumanWins", 0);
+        android_wins = mPrefs.getInt("mComputerWins", 0);
+        ties = mPrefs.getInt("mTies", 0);
 
         startNewGame();
+
+        updateScore();
+
     }
 
     @Override
@@ -322,4 +337,42 @@ public class TicTacToeActivity extends AppCompatActivity {
         mHumanMediaPlayer.release();
         mComputerMediaPLayer.release();
     }
+
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putCharArray("board", mGame.getBoardState());
+        outState.putBoolean("mGameOver", mGameOver);
+        outState.putInt("mHumanWins", Integer.valueOf(human_wins));
+        outState.putInt("mComputerWins", Integer.valueOf(android_wins));
+        outState.putInt("mTies", Integer.valueOf(ties));
+        outState.putCharSequence("info", mInfoTextView.getText());
+        outState.putInt("mTurn", Integer.valueOf(turn));
+
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Save the current scores
+        SharedPreferences.Editor ed = mPrefs.edit();
+        ed.putInt("mHumanWins", human_wins);
+        ed.putInt("mComputerWins", android_wins);
+        ed.putInt("mTies", ties);
+        ed.commit();
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // Restore the game's state
+        mGame.setBoardState(savedInstanceState.getCharArray("board"));
+        mGameOver = savedInstanceState.getBoolean("mGameOver");
+        mInfoTextView.setText(savedInstanceState.getCharSequence("info"));
+        human_wins = savedInstanceState.getInt("mHumanWins");
+        android_wins = savedInstanceState.getInt("mComputerWins");
+        ties = savedInstanceState.getInt("mTies");
+        turn = savedInstanceState.getInt("mTurn");
+    }
+
 }

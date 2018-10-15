@@ -15,6 +15,14 @@ public class TicTacToeGame {
 
     private Random mRand;
 
+    public char[] getBoardState() {
+        return mBoard;
+    }
+
+    public void setBoardState(char[] boards) {
+        this.mBoard=boards;
+    }
+
     public enum DifficultyLevel {Easy, Harder, Expert};
 
     private DifficultyLevel mDifficultyLevel = DifficultyLevel.Expert;
